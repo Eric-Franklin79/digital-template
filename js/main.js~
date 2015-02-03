@@ -17,7 +17,7 @@ window.onload = function() {
     
     function preload() {
         // Load an image and call it 'logo'.
-        game.load.image( 'park', 'assets/park.png' );
+        game.load.image( 'hero', 'assets/Hero.png' );
         game.load.image( 'bob', 'assets/DogCatcher.png' );
         game.load.image( 'catcherswing', 'assets/DogCatcherSwing.png' );
         game.load.image( 'catchermove', 'assets/DogCatcherMove.png' );
@@ -28,14 +28,11 @@ window.onload = function() {
     var catcher;
     var cursors;
     var swing;
-    var background;
     
     function create() {
         // Create a sprite at the center of the screen using the 'logo' image.
-        background = game.add.tileSprite(0,0, 800, 600, 'park'); 
+        catcher = this.game.add.sprite( game.world.centerX, game.world.centerY, 'hero' );
         dog = game.add.sprite( game.world.centerX, game.world.centerY, 'spike' );
-        catcher = this.game.add.sprite( game.world.centerX, game.world.centerY, 'bob' );
-        
         // Anchor the sprite at its center, as opposed to its top-left corner.
         // so it will be truly centered.
         catcher.anchor.setTo( 0.5, 0.5 );
@@ -89,7 +86,7 @@ window.onload = function() {
 	//The catcher 'swings' the net, the sprite frame changes when pressing Spacebar.
 	if(swing.isDown)
 	{
-		catcher.loadTexture('catcherswing', 0);
+		catcher.loadTexture('catchermove', 0);
 	}
 	else if(swing.isUp)
 	{
