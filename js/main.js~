@@ -13,11 +13,31 @@ window.onload = function() {
     
     "use strict";
     
+    Dog = function(index, game){
+    	
+        this.x = game.world.randomX;
+        this.y = game.world.randomY;
+     //   this.game = game;
+      //  this.minSpeed = -75;
+      //  this.maxSpeed = 75;
+      //  this.vx = Math.random()*(this.maxSpeed - this.minSpeed+1)-this.minSpeed;
+      //  this.vy = Math.random()*(this.maxSpeed - this.minSpeed+1)-this.minSpeed;
+        
+        this.dog = game.add.sprite(this.x,this.y,"spike");
+        game.physics.enable( this.dog, Phaser.Physics.ARCADE );
+        this.dog.anchor.setTo(0.5, 0.5);
+        this.dog.body.collideWorldBounds = true;
+  
+        this.dog.body.velocity.x = this.vx;
+        this.dog.body.velocity.y = this.vy;
+        //this.dog.body.immovable = true;
+    }
+    
     var game = new Phaser.Game( 800, 600, Phaser.CANVAS, 'game', { preload: preload, create: create, update: update } );
     
     function preload() {
         // Load an image and call it 'logo'.
-        game.load.image( 'hero', 'assets/Hero.png' );
+        game.load.image( 'park', 'assets/park.png' );
         game.load.image( 'bob', 'assets/DogCatcher.png' );
         game.load.image( 'catcherswing', 'assets/DogCatcherSwing.png' );
         game.load.image( 'catchermove', 'assets/DogCatcherMove.png' );
@@ -28,19 +48,32 @@ window.onload = function() {
     var catcher;
     var cursors;
     var swing;
+    var background;
+    var dogs;
+    var numOfDogs = 5;
+    var Dog;
     
     function create() {
         // Create a sprite at the center of the screen using the 'logo' image.
-        catcher = this.game.add.sprite( game.world.centerX, game.world.centerY, 'hero' );
-        dog = game.add.sprite( game.world.centerX, game.world.centerY, 'spike' );
-        // Anchor the sprite at its center, as opposed to its top-left corner.
-        // so it will be truly centered.
+        background = game.add.tileSprite(0,0, 800, 600, 'park'); 
+        
+        catcher = this.game.add.sprite( game.world.centerX, game.world.centerY, 'bob' );
         catcher.anchor.setTo( 0.5, 0.5 );
+        game.physics.enable( catcher, Phaser.Physics.ARCADE );
+        catcher.body.collideWorldBounds = true;
+        
         
         // Turn on the arcade physics engine for this sprite.
-        game.physics.enable( catcher, Phaser.Physics.ARCADE );
+        cursors = game.input.keyboard.createCursorKeys();
+        game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
+        swing = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         // Make it bounce off of the world bounds.
-        catcher.body.collideWorldBounds = true;
+        
+        dogs = [];
+        for (var i=0; i<numOfDogs; i++)
+        {
+        	dogs.push(new Dog(i, game));
+        }
         
         // Add some text using a CSS style.
         // Center it in X, and position its top 15 pixels from the top of the world.
@@ -86,7 +119,7 @@ window.onload = function() {
 	//The catcher 'swings' the net, the sprite frame changes when pressing Spacebar.
 	if(swing.isDown)
 	{
-		catcher.loadTexture('catchermove', 0);
+		catcher.loadTexture('catcherswing', 0);
 	}
 	else if(swing.isUp)
 	{

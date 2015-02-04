@@ -13,6 +13,52 @@ window.onload = function() {
     
     "use strict";
     
+    Dog = function(index, game){
+    	
+        this.x = game.world.randomX;
+        this.y = game.world.randomY;
+        this.game = game;
+        
+        
+        
+        this.dog = game.add.sprite(this.x,this.y,"spike");
+        game.physics.enable( this.dog, Phaser.Physics.ARCADE );
+        this.dog.anchor.setTo(0.5, 0.5);
+        this.dog.body.collideWorldBounds = true;
+        
+        
+        this.dog.body.immovable = false;
+    }
+    Dog.prototype.walk = function() {
+    	this.minSpeed = 75;
+        this.maxSpeed = 75;
+        this.dir = Math.random()*(4-0);
+        this.vx = Math.random()*(this.maxSpeed - this.minSpeed+1)-this.minSpeed;
+        this.vy = Math.random()*(this.maxSpeed - this.minSpeed+1)-this.minSpeed;
+        if(this.dir < 1){
+        	this.dog.body.velocity.x = this.vx;
+        	this.dog.body.velocity.y = this.vy;	
+        }
+        else if(this.dir < 2){
+        	this.dog.body.velocity.x = this.vx;
+        	this.dog.body.velocity.y = this.vy * -1;
+        }
+        else if(this.dir < 3){
+        	this.dog.body.velocity.x = this.vx * -1;
+        	this.dog.body.velocity.y = this.vy;
+        }
+        else{
+        	this.dog.body.velocity.x = this.vx * -1;
+        	this.dog.body.velocity.y = this.vy *-1;
+        }
+        if(swing.isDown)
+	{
+		if(Math.abs(catcher.x - this.dog.x)<50){
+		this.dog.kill();
+		}
+	}
+    }
+    
     var game = new Phaser.Game( 800, 600, Phaser.CANVAS, 'game', { preload: preload, create: create, update: update } );
     
     function preload() {
@@ -29,21 +75,33 @@ window.onload = function() {
     var cursors;
     var swing;
     var background;
+    var dogs;
+    var numOfDogs = 2;
+    var Dog;
+    var startTime = new Date().getTime() * .001;
+    var gameTime;
     
     function create() {
         // Create a sprite at the center of the screen using the 'logo' image.
         background = game.add.tileSprite(0,0, 800, 600, 'park'); 
-        dog = game.add.sprite( game.world.centerX, game.world.centerY, 'spike' );
-        catcher = this.game.add.sprite( game.world.centerX, game.world.centerY, 'bob' );
         
-        // Anchor the sprite at its center, as opposed to its top-left corner.
-        // so it will be truly centered.
+        catcher = this.game.add.sprite( game.world.centerX, game.world.centerY, 'bob' );
         catcher.anchor.setTo( 0.5, 0.5 );
+        game.physics.enable( catcher, Phaser.Physics.ARCADE );
+        catcher.body.collideWorldBounds = true;
+        
         
         // Turn on the arcade physics engine for this sprite.
-        game.physics.enable( catcher, Phaser.Physics.ARCADE );
+        cursors = game.input.keyboard.createCursorKeys();
+        game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
+        swing = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         // Make it bounce off of the world bounds.
-        catcher.body.collideWorldBounds = true;
+        
+        dogs = [];
+        for (var i=0; i<numOfDogs; i++)
+        {
+        	dogs.push(new Dog(i, game));
+        }
         
         // Add some text using a CSS style.
         // Center it in X, and position its top 15 pixels from the top of the world.
@@ -57,7 +115,14 @@ window.onload = function() {
     }
     
     function update() {
+    	 gameTime = new Date().getTime() * .001;
         //Moves the dog catcher right,left,up, or down 150pixels/second by using the arrow keys.
+        if(Math.floor(gameTime - startTime)%2 === 0){
+		for (var i=0; i<dogs.length; i++){
+			game.physics.arcade.collide(catcher, dogs[i]);
+			dogs[i].walk();
+		}
+        }
         if(cursors.left.isDown)
 	{
 		
@@ -90,6 +155,11 @@ window.onload = function() {
 	if(swing.isDown)
 	{
 		catcher.loadTexture('catcherswing', 0);
+		/*for (var i=0; i<dogs.length; i++){
+			if(Math.abs(catcher.x - dogs[i].x)<50){
+				dogs[i].kill();	
+			}
+		}*/
 	}
 	else if(swing.isUp)
 	{
