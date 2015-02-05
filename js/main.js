@@ -18,7 +18,7 @@ window.onload = function() {
         this.x = game.world.randomX;
         this.y = game.world.randomY;
         this.game = game;
-        
+        this.alive = true;
         
         
         this.dog = game.add.sprite(this.x,this.y,"spike");
@@ -53,11 +53,14 @@ window.onload = function() {
         }
         if(swing.isDown)
 	{
+		if(this.alive){
 		if(Math.abs(catcher.x - this.dog.x)<50){
-		this.dog.destroy();
+		this.dog.kill();
+		this.alive = false;
 		score = score + 50;
 		dogs.splice(dogs.indexOf(this.dog, 1));
-		scoreText.setText(String(score));
+		scoreText.setText("Score: " + String(score));
+		}
 		}
 	}
     }
@@ -71,6 +74,7 @@ window.onload = function() {
         game.load.image( 'catcherswing', 'assets/DogCatcherSwing.png' );
         game.load.image( 'catchermove', 'assets/DogCatcherMove.png' );
         game.load.image( 'spike', 'assets/dog.png' );
+        game.load.image( 'gameover', 'assets/gameOver.png' );
         
     }
     var dog;
@@ -79,7 +83,7 @@ window.onload = function() {
     var swing;
     var background;
     var dogs;
-    var numOfDogs = 2;
+    var numOfDogs = 25;
     var Dog;
     var startTime = new Date().getTime() * .001;
     var gameTime;
@@ -112,7 +116,7 @@ window.onload = function() {
         
         // Add some text using a CSS style.
         // Center it in X, and position its top 15 pixels from the top of the world.
-        var style = { font: "20px Verdana", fill: "#DF0101", align: "center" };
+        var style = { font: "20px Verdana", fill: "#FFFFFF", align: "center" };
         scoreText = game.add.text( 50, 15, "Score: "+ String(score), style );
         scoreText.anchor.setTo( 0.5, 0.0 );
         var styleT = { font: "35px Verdana", fill: "#FFFFFF", align: "center" };
@@ -124,6 +128,7 @@ window.onload = function() {
     }
     
     function update() {
+    	    if(dogs.length === 0){win();}
     	 gameTime = new Date().getTime() * .001;
     	 updateTimer();
          if(Math.floor(gameTime - startTime)%2 === 0){
@@ -164,11 +169,6 @@ window.onload = function() {
 	if(swing.isDown)
 	{
 		catcher.loadTexture('catcherswing', 0);
-		/*for (var i=0; i<dogs.length; i++){
-			if(Math.abs(catcher.x - dogs[i].x)<50){
-				dogs[i].kill();	
-			}
-		}*/
 	}
 	else if(swing.isUp)
 	{
@@ -177,10 +177,22 @@ window.onload = function() {
     }
     function updateTimer(){
     	 timer = 90 - Math.floor(gameTime-startTime);
-    	 if(timer < 0){timer = 0;}    	 
     	 timeText.setText(String(timer));
+    	 if(timer < 0){gameover()} 
     }
-    function updateScore(){
-    	    
+    function gameover(){
+    	    game.add.sprite(0, 0, 'gameover');
+    	    //remove text, add score
+    	    var style = { font: "20px Verdana", fill: "#DF0101", align: "center" };
+    	    var finalScore = game.add.text( 300, 400, "Final Score: "+ String(score), style );
+    }
+    function win(){
+    	game.world.remove(scoreText, true);
+    	game.world.remove(timeText, true);
+    	timer = 90;
+    	var style = { font: "bold 60px Verdana", fill: "#FFFFFF", align: "center" };
+    	game.add.text(40, 140, "CONGRATULATIONS!", style);
+    	style = { font: "bold 40px Verdana", fill: "#FFFFFF", align: "center" };
+    	game.add.text(220, 250, "Final Score: " + String(score), style);
     }
 };
