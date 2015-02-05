@@ -24,9 +24,12 @@ window.onload = function() {
         this.dog.body.collideWorldBounds = true;
        // this.dog.body.immovable = false;
     }
+    Dog.prototype.det = function() {
+    	this.dog.destroy();	    
+    }
     Dog.prototype.walk = function() {
-    	this.minSpeed = 75;
-        this.maxSpeed = 75;
+    	this.minSpeed = -65;
+        this.maxSpeed = 65;
         this.dir = Math.random()*(4-0);
         this.vx = Math.random()*(this.maxSpeed - this.minSpeed+1)-this.minSpeed;
         this.vy = Math.random()*(this.maxSpeed - this.minSpeed+1)-this.minSpeed;
@@ -48,14 +51,15 @@ window.onload = function() {
         }
         if(swing.isDown){
 		if(this.alive){
-			if((Math.abs((this.dog.x-15) - catcher.x) >0) && (Math.abs((this.dog.x-45)
-				- catcher.x) <40) && (Math.abs(this.dog.y- catcher.y) < 70) 
-				&& (Math.abs(this.dog.y - (catcher.y - 55)) > 0)){
+			if((Math.abs(this.dog.x - catcher.x) >0) && (Math.abs(this.dog.x
+				- catcher.x) <75) && (Math.abs(this.dog.y- catcher.y) < 90) 
+				&& (Math.abs(this.dog.y - catcher.y) > 0)){
 				this.dog.kill();
 				this.alive = false;
 				score = score + 50;
 				numOfDogs -= 1;
 				scoreText.setText("Score: " + String(score));
+				count.setText("Dogs Captured: " + String(score/50));
 			}
 		}
 	}
@@ -80,15 +84,18 @@ window.onload = function() {
     var swing;
     var background;
     var dogs;
-    var numOfDogs = 10;
+    var numOfDogs = 6;
     var Dog;
-    var startTime = new Date().getTime();
+    var startTime = 0;
     var gameTime;
     var score = 0;
     var timer;
     var timeText;
-    var scoreText
-  
+    var scoreText;
+    var end = false;
+    var maxDogs = 500
+    var count;
+    var start = false;
     
     function create() {
         // Create a sprite at the center of the screen using the 'logo' image.
@@ -98,7 +105,7 @@ window.onload = function() {
         catcher.anchor.setTo( 0.5, 0.5 );
         game.physics.enable( catcher, Phaser.Physics.ARCADE );
         catcher.body.collideWorldBounds = true;
-        
+        game.input.onDown.add(startGame, this);
         
         // Turn on the arcade physics engine for this sprite.
         cursors = game.input.keyboard.createCursorKeys();
@@ -107,17 +114,18 @@ window.onload = function() {
         // Make it bounce off of the world bounds.
         
         dogs = [];
+        
         for (var i=0; i<numOfDogs; i++){
         	dogs.push(new Dog(i, game));
         }
-        
         // Add some text using a CSS style.
         // Center it in X, and position its top 15 pixels from the top of the world.
         var style = { font: "20px Verdana", fill: "#FFFFFF", align: "center" };
-        scoreText = game.add.text( 55, 15, "Score: "+ String(score), style );
+        scoreText = game.add.text( 55, 10, "Score: "+ String(score), style );
+        count = game.add.text( 550, 10, "Dogs Captured: 0", style );
         scoreText.anchor.setTo( 0.5, 0.0 );
         var styleT = { font: "35px Verdana", fill: "#FFFFFF", align: "center" };
-        timeText = game.add.text(game.world.centerX, 15, String(timer), styleT);
+        timeText = game.add.text(300, 200, "Click to Start", styleT);
         
         cursors = game.input.keyboard.createCursorKeys();
         game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
@@ -125,88 +133,110 @@ window.onload = function() {
     }
     
     function update() {
-    	    
-    	 if(numOfDogs === 0){win();}
-    	 gameTime = new Date().getTime();
-    	 updateTimer();
-         if(Math.floor((gameTime - startTime)*.01)%2 === 0){
-		for (var i=0; i<dogs.length; i++){
-			game.physics.arcade.collide(catcher, dogs[i]);
-			dogs[i].walk();
+    	 if(start){
+    	 if(!end){
+		 if(numOfDogs === 0){win();}
+		 gameTime = new Date().getTime();
+		 updateTimer();
+		 //move the dogs
+		 if(Math.floor((gameTime - startTime)*.01)%5 === 0){
+			for (var i=0; i<dogs.length; i++){
+				game.physics.arcade.collide(catcher, dogs[i]);
+				dogs[i].walk();
+			}
 		}
-        }
-        //The catcher 'swings' the net, the sprite frame changes when pressing Spacebar.
-	
-        //Moves the dog catcher right,left,up, or down 150pixels/second by using the arrow keys.
-        if(cursors.left.isDown){
-		catcher.scale.x = -1;
-		catcher.body.velocity.x = -150;
-		if(Math.floor((gameTime - startTime)*.01)%2 === 0){
-			catcher.loadTexture('catchermove');
+		//The catcher 'swings' the net, the sprite frame changes when pressing Spacebar.
+		//Moves the dog catcher right,left,up, or down 150pixels/second by using the arrow keys.
+		if(cursors.left.isDown){
+			catcher.scale.x = -1;
+			catcher.body.velocity.x = -150;
+			if(Math.floor((gameTime - startTime)*.01)%2 === 0){
+				catcher.loadTexture('catchermove');
+			}
+			else{
+				catcher.loadTexture('bob');
+			}
+			if(swing.isDown){
+				catcher.loadTexture('catcherswing');
+			}
 		}
-		else{
-			catcher.loadTexture('bob');
+		else if(cursors.right.isDown){
+			
+			catcher.scale.x = 1;
+			catcher.body.velocity.x = 150;
+			if(Math.floor((gameTime - startTime)*.01)%2 === 0){
+				catcher.loadTexture('catchermove');
+			}
+			else{
+				catcher.loadTexture('bob');
+			}
+			if(swing.isDown){
+				catcher.loadTexture('catcherswing');
+			}
 		}
-		if(swing.isDown){
-			catcher.loadTexture('catcherswing');
+		else{ //if(cursors.left.isUp || coursers.right.isUp)      
+			catcher.body.velocity.x = 0;
+			catcher.loadTexture('bob', 0);	
+			if(swing.isDown){
+				catcher.loadTexture('catcherswing');
+			}
 		}
-	}
-	else if(cursors.right.isDown){
+		if(cursors.down.isDown){
+			catcher.body.velocity.y = 150;
+		}
+		else if(cursors.up.isDown){
+			catcher.body.velocity.y = -150;
+		}
+		else if(cursors.down.isUp || coursers.up.isUp){
+			catcher.body.velocity.y = 0;
+		}
+		//add a dog for every two dogs every 7 seconds
+		if((90 - (90-(gameTime-startTime)*.001))%5 < .025){
+			var j = Math.floor(numOfDogs/2);
+			if((numOfDogs + j) < maxDogs){
+				for(var i=0; i<j; i++){
+					dogs.push(new Dog(numOfDogs+i, game));
+				}
+				numOfDogs += j;
+			}
+		}
+	 }
+	 //end game update
+	 else{
+	 	 catcher.body.velocity.y = 0;
+	 	 catcher.body.velocity.x = 0;
+	 	 for (var i=0; i<dogs.length; i++){
+				dogs[i].det();
+		}
 		
-		catcher.scale.x = 1;
-		catcher.body.velocity.x = 150;
-		if(Math.floor((gameTime - startTime)*.01)%2 === 0){
-			catcher.loadTexture('catchermove');
-		}
-		else{
-			catcher.loadTexture('bob');
-		}
-		if(swing.isDown){
-			catcher.loadTexture('catcherswing');
-		}
-	}
-	else{ //if(cursors.left.isUp || coursers.right.isUp)      
-		catcher.body.velocity.x = 0;
-		catcher.loadTexture('bob', 0);	
-		if(swing.isDown){
-			catcher.loadTexture('catcherswing');
-		}
-	}
-	if(cursors.down.isDown){
-		catcher.body.velocity.y = 150;
-	}
-	else if(cursors.up.isDown){
-		catcher.body.velocity.y = -150;
-	}
-	else if(cursors.down.isUp || coursers.up.isUp){
-		catcher.body.velocity.y = 0;
-	}
-	if((90 - (gameTime-startTime)*.001)%5 < .025){
-		var j = Math.floor(numOfDogs/2);
-		for(var i=0; i<j; i++){
-			dogs.push(new Dog(numOfDogs+i, game));
-		}
-		numOfDogs += j;
-	}
+	 }
+	 }
     }
     function updateTimer(){
     	 timer = 90 - Math.floor((gameTime-startTime)*.001);
+    	 timeText.x = game.world.centerX;
+    	 timeText.y = 10;
     	 timeText.setText(String(timer));
     	 if(timer < 0){gameover()} 
     }
     function gameover(){
+    	    end = true;
     	    game.add.sprite(0, 0, 'gameover');
-    	    //remove text, add score
     	    var style = { font: "20px Verdana", fill: "#DF0101", align: "center" };
     	    var finalScore = game.add.text( 300, 400, "Final Score: "+ String(score), style );
     }
     function win(){
+	end = true;    	    
     	game.world.remove(scoreText, true);
     	game.world.remove(timeText, true);
-    	timer = 90;
     	var style = { font: "bold 60px Verdana", fill: "#FFFFFF", align: "center" };
     	game.add.text(40, 140, "CONGRATULATIONS!", style);
     	style = { font: "bold 40px Verdana", fill: "#FFFFFF", align: "center" };
     	game.add.text(220, 250, "Final Score: " + String(score), style);
+    }
+    function startGame() {
+    	game.input.onDown.remove(startGame, this);
+    	start = true;
+    	startTime = new Date().getTime();
     }
 };
