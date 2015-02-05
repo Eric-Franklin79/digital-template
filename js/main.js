@@ -22,7 +22,7 @@ window.onload = function() {
         game.physics.enable( this.dog, Phaser.Physics.ARCADE );
         this.dog.anchor.setTo(0.5, .05);
         this.dog.body.collideWorldBounds = true;
-        this.dog.body.immovable = false;
+       // this.dog.body.immovable = false;
     }
     Dog.prototype.walk = function() {
     	this.minSpeed = 75;
@@ -80,9 +80,9 @@ window.onload = function() {
     var swing;
     var background;
     var dogs;
-    var numOfDogs = 2;
+    var numOfDogs = 10;
     var Dog;
-    var startTime = new Date().getTime();// * .001;
+    var startTime = new Date().getTime();
     var gameTime;
     var score = 0;
     var timer;
@@ -114,7 +114,7 @@ window.onload = function() {
         // Add some text using a CSS style.
         // Center it in X, and position its top 15 pixels from the top of the world.
         var style = { font: "20px Verdana", fill: "#FFFFFF", align: "center" };
-        scoreText = game.add.text( 50, 15, "Score: "+ String(score), style );
+        scoreText = game.add.text( 55, 15, "Score: "+ String(score), style );
         scoreText.anchor.setTo( 0.5, 0.0 );
         var styleT = { font: "35px Verdana", fill: "#FFFFFF", align: "center" };
         timeText = game.add.text(game.world.centerX, 15, String(timer), styleT);
@@ -127,7 +127,7 @@ window.onload = function() {
     function update() {
     	    
     	 if(numOfDogs === 0){win();}
-    	 gameTime = new Date().getTime();// * .001;
+    	 gameTime = new Date().getTime();
     	 updateTimer();
          if(Math.floor((gameTime - startTime)*.01)%2 === 0){
 		for (var i=0; i<dogs.length; i++){
@@ -181,7 +181,13 @@ window.onload = function() {
 	else if(cursors.down.isUp || coursers.up.isUp){
 		catcher.body.velocity.y = 0;
 	}
-	
+	if((90 - (gameTime-startTime)*.001)%5 < .025){
+		var j = Math.floor(numOfDogs/2);
+		for(var i=0; i<j; i++){
+			dogs.push(new Dog(numOfDogs+i, game));
+		}
+		numOfDogs += j;
+	}
     }
     function updateTimer(){
     	 timer = 90 - Math.floor((gameTime-startTime)*.001);
