@@ -54,7 +54,10 @@ window.onload = function() {
         if(swing.isDown)
 	{
 		if(Math.abs(catcher.x - this.dog.x)<50){
-		this.dog.kill();
+		this.dog.destroy();
+		score = score + 50;
+		dogs.splice(dogs.indexOf(this.dog, 1));
+		scoreText.setText(String(score));
 		}
 	}
     }
@@ -80,6 +83,10 @@ window.onload = function() {
     var Dog;
     var startTime = new Date().getTime() * .001;
     var gameTime;
+    var score = 0;
+    var timer;
+    var timeText;
+    var scoreText
     
     function create() {
         // Create a sprite at the center of the screen using the 'logo' image.
@@ -105,9 +112,11 @@ window.onload = function() {
         
         // Add some text using a CSS style.
         // Center it in X, and position its top 15 pixels from the top of the world.
-       // var style = { font: "25px Verdana", fill: "#9999ff", align: "center" };
-       // var text = game.add.text( game.world.centerX, 15, "Build something awesome.", style );
-      //  text.anchor.setTo( 0.5, 0.0 );
+        var style = { font: "20px Verdana", fill: "#DF0101", align: "center" };
+        scoreText = game.add.text( 50, 15, "Score: "+ String(score), style );
+        scoreText.anchor.setTo( 0.5, 0.0 );
+        var styleT = { font: "35px Verdana", fill: "#FFFFFF", align: "center" };
+        timeText = game.add.text(game.world.centerX, 15, String(timer), styleT);
         
         cursors = game.input.keyboard.createCursorKeys();
         game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
@@ -116,16 +125,16 @@ window.onload = function() {
     
     function update() {
     	 gameTime = new Date().getTime() * .001;
-        //Moves the dog catcher right,left,up, or down 150pixels/second by using the arrow keys.
-        if(Math.floor(gameTime - startTime)%2 === 0){
+    	 updateTimer();
+         if(Math.floor(gameTime - startTime)%2 === 0){
 		for (var i=0; i<dogs.length; i++){
 			game.physics.arcade.collide(catcher, dogs[i]);
 			dogs[i].walk();
 		}
         }
+        //Moves the dog catcher right,left,up, or down 150pixels/second by using the arrow keys.
         if(cursors.left.isDown)
 	{
-		
 		catcher.body.velocity.x = -150;
 		
 	}
@@ -165,5 +174,13 @@ window.onload = function() {
 	{
 		catcher.loadTexture('bob', 0);	
 	}
+    }
+    function updateTimer(){
+    	 timer = 90 - Math.floor(gameTime-startTime);
+    	 if(timer < 0){timer = 0;}    	 
+    	 timeText.setText(String(timer));
+    }
+    function updateScore(){
+    	    
     }
 };
