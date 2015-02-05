@@ -14,19 +14,14 @@ window.onload = function() {
     "use strict";
     
     Dog = function(index, game){
-    	
         this.x = game.world.randomX;
         this.y = game.world.randomY;
         this.game = game;
         this.alive = true;
-        
-        
         this.dog = game.add.sprite(this.x,this.y,"spike");
         game.physics.enable( this.dog, Phaser.Physics.ARCADE );
-        this.dog.anchor.setTo(0.5, 0.5);
+        this.dog.anchor.setTo(0.5, .05);
         this.dog.body.collideWorldBounds = true;
-        
-        
         this.dog.body.immovable = false;
     }
     Dog.prototype.walk = function() {
@@ -51,16 +46,17 @@ window.onload = function() {
         	this.dog.body.velocity.x = this.vx * -1;
         	this.dog.body.velocity.y = this.vy *-1;
         }
-        if(swing.isDown)
-	{
+        if(swing.isDown){
 		if(this.alive){
-		if(Math.abs(catcher.x - this.dog.x)<50){
-		this.dog.kill();
-		this.alive = false;
-		score = score + 50;
-		dogs.splice(dogs.indexOf(this.dog, 1));
-		scoreText.setText("Score: " + String(score));
-		}
+			if((Math.abs((this.dog.x-15) - catcher.x) >0) && (Math.abs((this.dog.x-45)
+				- catcher.x) <40) && (Math.abs(this.dog.y- catcher.y) < 70) 
+				&& (Math.abs(this.dog.y - (catcher.y - 55)) > 0)){
+				this.dog.kill();
+				this.alive = false;
+				score = score + 50;
+				numOfDogs -= 1;
+				scoreText.setText("Score: " + String(score));
+			}
 		}
 	}
     }
@@ -77,20 +73,22 @@ window.onload = function() {
         game.load.image( 'gameover', 'assets/gameOver.png' );
         
     }
+    
     var dog;
     var catcher;
     var cursors;
     var swing;
     var background;
     var dogs;
-    var numOfDogs = 25;
+    var numOfDogs = 2;
     var Dog;
-    var startTime = new Date().getTime() * .001;
+    var startTime = new Date().getTime();// * .001;
     var gameTime;
     var score = 0;
     var timer;
     var timeText;
     var scoreText
+  
     
     function create() {
         // Create a sprite at the center of the screen using the 'logo' image.
@@ -109,8 +107,7 @@ window.onload = function() {
         // Make it bounce off of the world bounds.
         
         dogs = [];
-        for (var i=0; i<numOfDogs; i++)
-        {
+        for (var i=0; i<numOfDogs; i++){
         	dogs.push(new Dog(i, game));
         }
         
@@ -128,55 +125,66 @@ window.onload = function() {
     }
     
     function update() {
-    	    if(dogs.length === 0){win();}
-    	 gameTime = new Date().getTime() * .001;
+    	    
+    	 if(numOfDogs === 0){win();}
+    	 gameTime = new Date().getTime();// * .001;
     	 updateTimer();
-         if(Math.floor(gameTime - startTime)%2 === 0){
+         if(Math.floor((gameTime - startTime)*.01)%2 === 0){
 		for (var i=0; i<dogs.length; i++){
 			game.physics.arcade.collide(catcher, dogs[i]);
 			dogs[i].walk();
 		}
         }
+        //The catcher 'swings' the net, the sprite frame changes when pressing Spacebar.
+	
         //Moves the dog catcher right,left,up, or down 150pixels/second by using the arrow keys.
-        if(cursors.left.isDown)
-	{
+        if(cursors.left.isDown){
+		catcher.scale.x = -1;
 		catcher.body.velocity.x = -150;
-		
+		if(Math.floor((gameTime - startTime)*.01)%2 === 0){
+			catcher.loadTexture('catchermove');
+		}
+		else{
+			catcher.loadTexture('bob');
+		}
+		if(swing.isDown){
+			catcher.loadTexture('catcherswing');
+		}
 	}
-	else if(cursors.right.isDown)
-	{
+	else if(cursors.right.isDown){
+		
+		catcher.scale.x = 1;
 		catcher.body.velocity.x = 150;
-		
+		if(Math.floor((gameTime - startTime)*.01)%2 === 0){
+			catcher.loadTexture('catchermove');
+		}
+		else{
+			catcher.loadTexture('bob');
+		}
+		if(swing.isDown){
+			catcher.loadTexture('catcherswing');
+		}
 	}
-	else if(cursors.left.isUp || coursers.right.isUp)      
-	{
+	else{ //if(cursors.left.isUp || coursers.right.isUp)      
 		catcher.body.velocity.x = 0;
 		catcher.loadTexture('bob', 0);	
+		if(swing.isDown){
+			catcher.loadTexture('catcherswing');
+		}
 	}
-	if(cursors.down.isDown)
-	{
+	if(cursors.down.isDown){
 		catcher.body.velocity.y = 150;
 	}
-	else if(cursors.up.isDown)
-	{
+	else if(cursors.up.isDown){
 		catcher.body.velocity.y = -150;
 	}
-	else if(cursors.down.isUp || coursers.up.isUp)
-	{
+	else if(cursors.down.isUp || coursers.up.isUp){
 		catcher.body.velocity.y = 0;
 	}
-	//The catcher 'swings' the net, the sprite frame changes when pressing Spacebar.
-	if(swing.isDown)
-	{
-		catcher.loadTexture('catcherswing', 0);
-	}
-	else if(swing.isUp)
-	{
-		catcher.loadTexture('bob', 0);	
-	}
+	
     }
     function updateTimer(){
-    	 timer = 90 - Math.floor(gameTime-startTime);
+    	 timer = 90 - Math.floor((gameTime-startTime)*.001);
     	 timeText.setText(String(timer));
     	 if(timer < 0){gameover()} 
     }
